@@ -26,6 +26,15 @@ def test():
 
     text = data.get("text", "")
 
+    if not text.strip():
+
+        return jsonify({
+            "success": False,
+            "content": None,
+            "is_fallback": False,
+            "error": "Empty input not allowed"
+        }), 400
+
     sanitized = sanitize_input(text)
 
     if sanitized is None:

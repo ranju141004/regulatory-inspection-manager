@@ -1,17 +1,80 @@
-# SECURITY REVIEW
+# SECURITY REVIEW — Regulatory Inspection Manager
 
-## Threats Identified
+## AI Service Security Protections
 
-1. Prompt Injection
-2. SQL Injection
-3. Excessive API Requests
-4. HTML/Script Injection
-5. Unauthorized API Access
+### 1. Prompt Injection Protection
+Implemented detection for:
+- ignore previous instructions
+- system override attempts
+- jailbreak-style prompts
 
-## Security Measures
+Result:
+- Returns HTTP 400
+- Request blocked successfully
 
-- Flask-Limiter rate limiting
-- Input sanitization
-- JWT authentication
-- Prompt filtering
-- Error handling with retries
+---
+
+### 2. HTML / Script Sanitization
+Implemented using Bleach.
+
+Protection:
+- Removes <script> tags
+- Prevents XSS payloads
+- Sanitizes user input before processing
+
+---
+
+### 3. Rate Limiting
+Implemented using flask-limiter.
+
+Configuration:
+- 30 requests per minute per IP
+
+Protection:
+- Prevents brute-force abuse
+- Reduces spam requests
+
+---
+
+### 4. SQL Injection Testing
+Tested payloads:
+- ' OR 1=1 --
+- DROP TABLE users;
+
+Result:
+- No SQL execution possible
+- Input treated as plain text
+
+---
+
+### 5. Empty Input Validation
+Empty or whitespace-only inputs rejected.
+
+Result:
+- Returns HTTP 400
+- Prevents invalid AI requests
+
+---
+
+## Security Testing Results
+
+| Test | Result |
+|------|--------|
+| Prompt Injection | PASSED |
+| HTML Injection | PASSED |
+| SQL Injection | PASSED |
+| Empty Input | PASSED |
+| Rate Limiting | PASSED |
+
+---
+
+## Residual Risks
+- Advanced prompt engineering attacks may still evolve
+- Groq API external dependency may introduce rate limits
+- Production deployment should use Redis-backed limiter storage
+
+---
+
+## Conclusion
+Core AI endpoint protections implemented successfully.
+No Critical or High vulnerabilities identified during Week 1 testing.
