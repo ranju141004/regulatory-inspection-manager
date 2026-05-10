@@ -22,19 +22,24 @@ def home():
 @app.route("/test", methods=["POST"])
 def test():
 
-    data = request.json
+    data = request.get_json()
 
     text = data.get("text", "")
 
     sanitized = sanitize_input(text)
 
     if sanitized is None:
+
         return jsonify({
-            "error": "Prompt injection detected"
+            "success": False,
+            "content": None,
+            "is_fallback": False
         }), 400
 
     return jsonify({
-        "message": sanitized
+        "success": True,
+        "content": sanitized,
+        "is_fallback": False
     })
 
 if __name__ == "__main__":
