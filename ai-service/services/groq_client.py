@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+MODEL = os.getenv("MODEL_NAME", "llama-3.3-70b-versatile")
 def call_groq(prompt):
 
     retries = 3
@@ -17,8 +18,9 @@ def call_groq(prompt):
     for attempt in range(retries):
 
         try:
+
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=MODEL,
                 messages=[
                     {
                         "role": "user",
@@ -26,24 +28,23 @@ def call_groq(prompt):
                     }
                 ],
                 temperature=0.3,
-                max_tokens=300
+                max_tokens=500
             )
-
-            content = response.choices[0].message.content
 
             return {
                 "success": True,
-                "response": content
+                "content": response.choices[0].message.content
             }
 
         except Exception as e:
 
-            logging.error(f"Attempt {attempt+1} failed: {e}")
+            logging.error(f"Groq Error: {e}")
 
             if attempt < retries - 1:
                 time.sleep(2 ** attempt)
 
     return {
         "success": False,
-        "response": "AI service unavailable"
+        "content": "Fallback response",
+        "is_fallback": True
     }

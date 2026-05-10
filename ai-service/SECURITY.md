@@ -3,24 +3,15 @@
 ## Threats Identified
 
 1. Prompt Injection
-- Malicious prompts may manipulate AI behavior.
-
 2. SQL Injection
-- Unsafe query handling can expose database data.
+3. Excessive API Requests
+4. HTML/Script Injection
+5. Unauthorized API Access
 
-3. XSS Attacks
-- HTML/JS input may execute in frontend.
+## Security Measures
 
-4. Rate Limit Abuse
-- Excessive requests may overload AI service.
-
-5. JWT Token Theft
-- Stolen tokens can bypass authentication.
-
-## Mitigations
-
+- Flask-Limiter rate limiting
 - Input sanitization
-- Flask limiter
-- JWT validation
-- Secure headers
-- Prepared statements
+- JWT authentication
+- Prompt filtering
+- Error handling with retries
