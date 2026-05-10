@@ -6,6 +6,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+SYSTEM_PROMPT = """
+You are a regulatory inspection AI assistant.
+
+Analyze inspection findings professionally.
+
+Always:
+- identify safety risks
+- identify compliance violations
+- suggest corrective actions
+- use concise professional language
+"""
+
 logging.basicConfig(level=logging.INFO)
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
@@ -21,12 +33,16 @@ def call_groq(prompt):
 
             response = client.chat.completions.create(
                 model=MODEL,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
+               messages=[
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT
+                },
+                {
+                    "role": "user",
+                    "content": text
+                }
+            ]
                 temperature=0.3,
                 max_tokens=500
             )
@@ -48,3 +64,4 @@ def call_groq(prompt):
         "content": "Fallback response",
         "is_fallback": True
     }
+

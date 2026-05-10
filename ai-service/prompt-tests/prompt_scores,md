@@ -1,0 +1,16 @@
+# Prompt Tuning Results
+
+| Input | Score (/10) | Notes |
+|---|---|---|
+| Expired food and hygiene issues | 8 | Good safety understanding |
+| Missing factory helmets | 8 | Relevant compliance response |
+| Chemical storage issues | 7 | Could improve detail |
+| Blocked emergency exits | 9 | Accurate risk assessment |
+| Electrical wiring hazard | 8 | Good identification |
+| Expired fire extinguishers | 8 | Correct recommendation |
+| Unsafe cafeteria storage | 7 | Slightly generic response |
+| Pharma documentation issue | 7 | Could improve specificity |
+| Elevator maintenance failure | 8 | Good safety emphasis |
+| Hazardous waste disposal | 9 | Strong environmental compliance |
+
+Average Score: 7.9/10
