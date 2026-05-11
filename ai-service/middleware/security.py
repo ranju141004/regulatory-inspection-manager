@@ -3,8 +3,8 @@ import bleach
 BLOCKED_WORDS = [
     "ignore previous instructions",
     "system prompt",
-    "bypass",
-    "hack"
+    "<script>",
+    "DROP TABLE"
 ]
 
 def sanitize_input(text):
