@@ -23,6 +23,8 @@ logging.basicConfig(level=logging.INFO)
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 MODEL = os.getenv("MODEL_NAME", "llama-3.3-70b-versatile")
+
+
 def call_groq(prompt):
 
     retries = 3
@@ -33,16 +35,16 @@ def call_groq(prompt):
 
             response = client.chat.completions.create(
                 model=MODEL,
-               messages=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT
-                },
-                {
-                    "role": "user",
-                    "content": text
-                }
-            ]
+                messages=[
+                    {
+                        "role": "system",
+                        "content": SYSTEM_PROMPT
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
                 temperature=0.3,
                 max_tokens=500
             )
@@ -64,4 +66,3 @@ def call_groq(prompt):
         "content": "Fallback response",
         "is_fallback": True
     }
-

@@ -1,118 +1,122 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from services.groq_client import call_groq, MODEL
 
-from services.security import sanitize_input
-
-# Create Flask app
 app = Flask(__name__)
 
-# Configure CORS
-CORS(app, resources={
-    r"/*": {
-        "origins": ["http://localhost"]
-    }
-})
 
-# Configure rate limiter
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["30 per minute"]
-)
+# ---------------------------------------------------
+# HOME ENDPOINT
+# ---------------------------------------------------
 
-limiter.init_app(app)
-
-
-# Security headers
-@app.after_request
-def add_security_headers(response):
-
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "script-src 'self'; "
-        "style-src 'self'; "
-        "img-src 'self' data:; "
-        "font-src 'self'; "
-        "connect-src 'self'; "
-        "frame-ancestors 'none'; "
-        "base-uri 'self'; "
-        "form-action 'self'"
-    )
-
-    response.headers["Referrer-Policy"] = "no-referrer"
-
-    response.headers["Server"] = "SecureServer"
-
-    return response
-
-
-# Home route
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
-    return jsonify({
-        "message": "AI Service Running Successfully"
-    })
+
+    return {
+        "message": "AI Service Running"
+    }, 200
 
 
-# Test route
-@app.route("/test", methods=["POST"])
-def test():
+# ---------------------------------------------------
+# HEALTH ENDPOINT
+# ---------------------------------------------------
+
+@app.route("/health", methods=["GET"])
+def health():
+
+    return {
+        "status": "healthy",
+        "model": MODEL,
+        "uptime": "running"
+    }, 200
+
+
+# ---------------------------------------------------
+# DESCRIBE ENDPOINT
+# ---------------------------------------------------
+
+@app.route("/describe", methods=["POST"])
+def describe():
 
     data = request.get_json()
 
-    # Validate JSON body
-    if not data:
+    if not data or "input_text" not in data:
         return jsonify({
-            "success": False,
-            "content": None,
-            "is_fallback": False,
-            "error": "No JSON body provided"
+            "error": "input_text is required"
         }), 400
 
-    text = data.get("text", "")
+    input_text = data["input_text"]
 
     # Empty input validation
-    if not text.strip():
+    if not input_text.strip():
         return jsonify({
-            "success": False,
-            "content": None,
-            "is_fallback": False,
-            "error": "Empty input not allowed"
+            "error": "Input cannot be empty"
         }), 400
 
-    # Input size validation
-    if len(text) > 5000:
+    # Large payload validation
+    if len(input_text) > 5000:
         return jsonify({
-            "success": False,
-            "content": None,
-            "is_fallback": False,
-            "error": "Input too large"
+            "error": "Payload too large"
         }), 400
 
-    # Sanitize input
-    sanitized = sanitize_input(text)
+    # Prompt injection detection
+    blocked_phrases = [
+        "ignore previous instructions",
+        "reveal system prompt",
+        "bypass security"
+    ]
 
-    # Injection detection
-    if sanitized is None:
+    for phrase in blocked_phrases:
+        if phrase.lower() in input_text.lower():
+            return jsonify({
+                "error": "Prompt injection detected"
+            }), 400
+
+    result = call_groq(input_text)
+
+    return jsonify(result), 200
+
+
+# ---------------------------------------------------
+# RECOMMEND ENDPOINT
+# ---------------------------------------------------
+
+@app.route("/recommend", methods=["POST"])
+def recommend():
+
+    data = request.get_json()
+
+    if not data or "input_text" not in data:
         return jsonify({
-            "success": False,
-            "content": None,
-            "is_fallback": False,
-            "error": "Malicious input detected"
+            "error": "input_text is required"
         }), 400
 
-    return jsonify({
-        "success": True,
-        "content": sanitized,
-        "is_fallback": False
-    })
+    result = call_groq(data["input_text"])
+
+    return jsonify(result), 200
 
 
-# Run app
+# ---------------------------------------------------
+# GENERATE REPORT ENDPOINT
+# ---------------------------------------------------
+
+@app.route("/generate-report", methods=["POST"])
+def generate_report():
+
+    data = request.get_json()
+
+    if not data or "input_text" not in data:
+        return jsonify({
+            "error": "input_text is required"
+        }), 400
+
+    result = call_groq(data["input_text"])
+
+    return jsonify(result), 200
+
+
+# ---------------------------------------------------
+# MAIN
+# ---------------------------------------------------
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(debug=True)
