@@ -3,6 +3,13 @@ from services.groq_client import call_groq, MODEL
 
 app = Flask(__name__)
 
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
 
 # ---------------------------------------------------
 # HOME ENDPOINT
