@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+
+  ai-service:
+    build: ./ai-service
+    container_name: regulatory-ai-service
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./ai-service/.env
+    restart: always
+
+  redis:
+    image: redis:7
+    container_name: regulatory-redis
+    ports:
+      - "6379:6379"
+    restart: always
