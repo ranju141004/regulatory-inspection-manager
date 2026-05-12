@@ -2,6 +2,24 @@ version: '3.9'
 
 services:
 
+  postgres:
+    image: postgres:15
+    container_name: regulatory-postgres
+    environment:
+      POSTGRES_DB: regulatorydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+
+  redis:
+    image: redis:7
+    container_name: regulatory-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
   ai-service:
     build: ./ai-service
     container_name: regulatory-ai-service
@@ -11,9 +29,28 @@ services:
       - ./ai-service/.env
     restart: always
 
-  redis:
-    image: redis:7
-    container_name: regulatory-redis
+  backend:
+    build: ./backend
+    container_name: regulatory-backend
     ports:
-      - "6379:6379"
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/regulatorydb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      REDIS_HOST: redis
+      AI_SERVICE_URL: http://ai-service:5000
+    depends_on:
+      - postgres
+      - redis
+      - ai-service
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: regulatory-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
     restart: always
